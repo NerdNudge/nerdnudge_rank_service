@@ -20,7 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class UserRankingRefresherService {
     public static String STATUS;
     private static final int pageSize = 5000;
-    private static final int scheduleFrequency = 30000;
+
     private Map<String, UserEntity> userEntities;
     private NerdPersistClient userProfilesPersist;
     private NerdPersistClient configPersist;
@@ -48,7 +48,7 @@ public class UserRankingRefresherService {
     }
 
 
-    @Scheduled(fixedDelay = scheduleFrequency)
+    @Scheduled(fixedDelayString = "${user.ranks.refresh.frequency}")
     public void refreshAllRankings() {
         STATUS = RankingRefresherStatusCodes.REFRESHING;
         List<String> allTopics = getAllTopics();
