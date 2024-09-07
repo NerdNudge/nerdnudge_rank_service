@@ -1,11 +1,14 @@
 package com.neurospark.nerdnudge.ranker.controller;
 
 import com.google.gson.JsonObject;
+import com.neurospark.nerdnudge.ranker.dto.LeaderBoardUserEntity;
 import com.neurospark.nerdnudge.ranker.dto.UserEntity;
 import com.neurospark.nerdnudge.ranker.response.ApiResponse;
 import com.neurospark.nerdnudge.ranker.service.UserRankingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/nerdnudge/userranks")
@@ -23,29 +26,16 @@ public class UserRankController {
     }
 
     @GetMapping("/getLeaderBoard")
-    public ApiResponse<JsonObject> getLeaderBoard(@RequestParam(value = "topic") String topic,
-                                                  @RequestParam(value = "fromRank") String fromRank,
-                                                  @RequestParam(value = "toRank") String toRank) {
-        return null;
+    public ApiResponse<List<LeaderBoardUserEntity>> getLeaderBoard(@RequestParam(value = "topic") String topic,
+                                                                   @RequestParam(value = "limit") int limit) {
+        long startTime = System.currentTimeMillis();
+        List<LeaderBoardUserEntity> leaderBoard = userRankingService.getLeaderBoard(topic, limit);
+        long endTime = System.currentTimeMillis();
+        return new ApiResponse<>("SUCCESS", "Leaderboard fetched successfully", leaderBoard, (endTime - startTime));
     }
 
-    @GetMapping("/getUserRankTrend/{id}")
-    public ApiResponse<JsonObject> getUserRankTrend(@PathVariable(value = "id") String userId, @RequestParam(value = "numDays") int numDays) {
-        return null;
-    }
-
-    @GetMapping("/getUserScoreTrend/{id}")
-    public ApiResponse<JsonObject> getUserScoreTrend(@PathVariable(value = "id") String userId, @RequestParam(value = "numDays") int numDays) {
-        return null;
-    }
-
-    @GetMapping("/getUserRankAndScoreTrends/{id}")
-    public ApiResponse<JsonObject> getUserRankAndScoreTrends(@PathVariable(value = "id") String userId) {
-        return null;
-    }
-
-    @GetMapping("/getUserRankAndScoreInsights/{id}")
-    public ApiResponse<JsonObject> getUserRankAndScoreInsights(@PathVariable(value = "id") String userId) {
-        return null;
+    @GetMapping("/health")
+    public ApiResponse<String> healthCheck() {
+        return new ApiResponse<>("SUCCESS", "Health Check Pass", "SUCCESS", 0);
     }
 }
