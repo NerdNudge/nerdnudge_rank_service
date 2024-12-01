@@ -8,8 +8,7 @@ import com.neurospark.nerdnudge.couchbase.service.NerdPersistClient;
 import com.neurospark.nerdnudge.ranker.dto.LeaderBoardUserEntity;
 import com.neurospark.nerdnudge.ranker.dto.UserEntity;
 import com.neurospark.nerdnudge.ranker.utils.RankingRefresherStatusCodes;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,6 +18,7 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Slf4j
 @Service
 public class UserRankingRefresherService {
     public static String STATUS;
@@ -41,7 +41,6 @@ public class UserRankingRefresherService {
 
     @Value("${persist.users.collection}")
     private String persistUsersCollectionName;
-    private static final Logger logger = LoggerFactory.getLogger(UserRankingRefresherService.class);
 
     @Autowired
     public UserRankingRefresherService(@Qualifier("configPersist") NerdPersistClient configPersist,
@@ -76,11 +75,11 @@ public class UserRankingRefresherService {
             String currentTopic = allTopics.get(i);
             int totalPages = getTotalPages(currentTopic);
             int topicRank = 0;
-            logger.info("Fetching rankings for topic: {}, total pages: {}", currentTopic, totalPages);
+            log.info("Fetching rankings for topic: {}, total pages: {}", currentTopic, totalPages);
             for (int k = 1; k <= totalPages; k++) {
                 int offset = (k - 1) * pageSize;
                 String topicRankQuery = getTopicRankQueryString(currentTopic, offset);
-                logger.debug("Querying page {} for topic: {}", k, currentTopic);
+                log.debug("Querying page {} for topic: {}", k, currentTopic);
                 QueryResult result = userProfilesPersist.getDocumentsByQuery(topicRankQuery);
                 for (com.couchbase.client.java.json.JsonObject row : result.rowsAsObject()) {
                     JsonObject thisResult = jsonParser.parse(row.toString()).getAsJsonObject();
@@ -99,7 +98,7 @@ public class UserRankingRefresherService {
         }
 
         STATUS = RankingRefresherStatusCodes.REFRESHED;
-        logger.info("Finished refreshing rankings. Status: {}", STATUS);
+        log.info("Finished refreshing rankings. Status: {}", STATUS);
     }
 
     private void addUserEntity(String userId, String topic, int topicRank, double score) {
@@ -162,7 +161,7 @@ public class UserRankingRefresherService {
             JsonObject thisResult = jsonParser.parse(row.toString()).getAsJsonObject();
             if(thisResult.has("count")) {
                 int totalUsers = thisResult.get("count").getAsInt();
-                logger.info("Total users for topic: {}: {}", topic, totalUsers);
+                log.info("Total users for topic: {}: {}", topic, totalUsers);
                 return (int) Math.ceil((double) totalUsers / pageSize);
             }
         }
@@ -201,9 +200,9 @@ public class UserRankingRefresherService {
             topicCodeToTopicNameMapping.addProperty(thisEntry.getKey(), thisEntry.getValue().getAsString());
         }
 
-        logger.info("Mapping topicNameToTopicCodeMapping: {}", topicNameToTopicCodeMapping);
-        logger.info("Mapping topicCodeToTopicNameMapping: {}", topicCodeToTopicNameMapping);
-        logger.info("All Topics for which Ranks will be refreshed: {}", allTopics);
+        log.info("Mapping topicNameToTopicCodeMapping: {}", topicNameToTopicCodeMapping);
+        log.info("Mapping topicCodeToTopicNameMapping: {}", topicCodeToTopicNameMapping);
+        log.info("All Topics for which Ranks will be refreshed: {}", allTopics);
         return allTopics;
     }
 }
